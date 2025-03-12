@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8">
+    <title>Oster-Chilly</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Chilly - Geleite den Pinguin durch sein rutschiges Labyrinth.">
+    <meta name="keywords" content="game, recreational, glissade, puzzle, penguin, chilly, all ages">
+    <meta name="author" content="Oliver Lau">
+    <meta name="copyright" content="Oliver Lau">
+    <meta name="robots" content="index,nofollow">
+    <meta name="google" content="nopagereadaloud">
+    <meta name="googlebot" content="notranslate">
+    <link rel="stylesheet" href="tiles.css">
+    <link rel="icon" href="static/images/favicon.png" />
+    <link rel="icon" sizes="32x32" href="static/images/chilly-32.png" />
+    <link rel="icon" sizes="48x48" href="static/images/chilly-48.png" />
+    <link rel="icon" sizes="64x64" href="static/images/chilly-64.png" />
+    <link rel="icon" sizes="96x96" href="static/images/chilly-96.png" />
+    <link rel="icon" sizes="128x128" href="static/images/chilly-128.png" />
+    <link rel="icon" sizes="192x192" href="static/images/chilly-192.png" />
+    <link rel="apple-touch-icon-precomposed" href="static/images/chilly-80x80.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="static/images/chilly-152.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="167x167" href="static/images/chilly-167.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="180x180" href="static/images/chilly-180.png" />
+    <meta name="apple-mobile-web-app-title" content="Chilly">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <script async src="static/js/bezier.min.js"></script>
+    <script async src="main.js"></script>
+    <style>
+        :root {
+            --text-color: #080808;
+            --faint-text-color: #588997;
+            --background-color: #B0E8F8;
+        }
+
+        @font-face {
+            font-family: 'VT323';
+            src: url('static/fonts/VT323-Regular.ttf') format('truetype');
+            font-display: swap;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: 'VT323', monospace;
+            font-size: 32px;
+        }
+
+        input {
+            font-family: 'VT323', monospace;
+            font-size: 16px;
+        }
+
+        #main-container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-items: center;
+            justify-content: center;
+            align-items: center;
+            align-content: center;
+        }
+
+        #overlay {
+            background-color: black;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.4;
+            z-index: 1000;
+        }
+
+        #overlay-box {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: transparent;
+            z-index: 1004;
+        }
+
+        .dialog {
+            opacity: unset;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .dialog>div {
+            background-color: var(--background-color);
+            border: 5px solid var(--text-color);
+            padding: 20px;
+            cursor: pointer;
+            margin: 0 20%;
+            box-sizing: content-box;
+            max-height: 75vh;
+            overflow: auto;
+        }
+
+        .dialog>div>div {
+            margin-bottom: 20px;
+        }
+
+        .locked {
+            color: var(--faint-text-color);
+            cursor: not-allowed;
+        }
+
+        .pulsating {
+            animation-name: pulsate;
+            animation-duration: 250ms;
+            animation-timing-function: ease-in-out;
+            animation-fill-mode: both;
+            animation-direction: alternate;
+            animation-iteration-count: infinite;
+            cursor: pointer;
+        }
+
+        @keyframes pulsate {
+            0% {
+                color: inherit;
+                text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+            }
+
+            100% {
+                color: #2e6372;
+                text-shadow: 0px 0px 5px rgba(255, 255, 255, 1.0);
+            }
+        }
+
+        #game-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #game {
+            position: relative;
+            padding: 2px;
+            width: fit-content;
+            border: none;
+            border: 3px solid #440B7D;
+            overflow: auto;
+            max-height: calc(100vh - 220px);
+            max-width: calc(100vw - 50px);
+        }
+
+        #game>div {
+            display: grid;
+        }
+
+        p {
+            margin: 10px;
+        }
+
+        #level-stats,
+        #extras {
+            margin: 6px 0 0 6px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-content: space-between;
+            width: 100%;
+        }
+
+        #level-stats {
+            justify-content: center;
+        }
+
+
+        #controls {
+            grid-area: controls;
+            display: grid;
+            margin: 10px 0 0 10px;
+            grid-template-columns: repeat(3, 32px);
+            grid-template-rows: repeat(3, 32px);
+            width: fit-content;
+        }
+
+        #moves {
+            overflow-wrap: anywhere;
+        }
+
+        .penguin {
+            position: absolute;
+            transition-property: transform, opacity;
+            transition-timing-function: cubic-bezier(0.785, 0.135, 0.15, 0.86);
+            transition-duration: 140ms;
+        }
+
+        .submerged {
+            opacity: .4;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #menu,
+        #extras {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-content: space-between;
+            max-width: var(--game-width);
+        }
+
+        #path {
+            font-size: 65%;
+            max-width: fit-content;
+            letter-spacing: .07em;
+            margin-right: 0.5em;
+        }
+
+        .level-list {
+            text-align: left;
+            overflow-x: hidden;
+            overflow-y: auto;
+            white-space: pre;
+        }
+
+        .level-list .marked {
+            background-color: var(--text-color);
+            color: var(--background-color);
+        }
+
+        button {
+            padding: 5px;
+            height: 32px;
+            border-radius: 0;
+            border: 2px solid var(--text-color);
+            cursor: pointer;
+        }
+
+        .hint {
+            z-index: 1002;
+            opacity: 0.7;
+            pointer-events: none;
+            position: absolute;
+        }
+
+        .final {
+            font-size: 161%;
+        }
+
+        .line {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0.8;
+        }
+
+        .visited {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0.2;
+        }
+
+        .interactive {
+            cursor: pointer;
+        }
+        
+    </style>
+    <style id="extra-styles"></style>
+</head>
+
+<body>
+    <div id="main-container">
+        <div id="game-container">
+            <div id="menu">
+                <span>
+                    <span class="interactive tile speaker-muted" id="loudspeaker" title="Audio on/off"></span>
+                </span>
+                <span id="level-num"></span>
+                <span>
+                    <span class="interactive tile restart" id="restart-level" title="Restart level"></span>
+                    <span class="interactive tile hamburger" id="choose-level" title="Choose level"></span>
+                </span>
+            </div>
+            <div id="level-stats">
+                <div>Züge <span id="move-count" title="# moves">0</span></div>
+            </div>
+            <div id="game"></div>
+            <div id="extras">
+                <div><input type="text" id="path"></input> <button id="autoplay">Autoplay</button></div>
+            </div>
+        </div>
+        <div id="controls" class="hidden">
+            <div class="tile empty"></div>
+            <div class="interactive tile arrow-up"></div>
+            <div class="tile empty"></div>
+            <div class="interactive tile arrow-left"></div>
+            <div class="tile empty"></div>
+            <div class="interactive tile arrow-right"></div>
+            <div class="tile empty"></div>
+            <div class="interactive tile arrow-down"></div>
+            <div class="tile empty"></div>
+        </div>
+    </div>
+    <div id="overlay" class="hidden"></div>
+    <div id="overlay-box" class="hidden"></div>
+
+    <template id="splash">
+        <div class="dialog">
+            <div>
+                <div>Chilly, der Pinguin, braucht deine Hilfe. Geleite ihn über die Ostereier zum Ausgang!
+                </div>
+                <div>In dieser Osterspezialausgabe sollst du den längsten Weg zum Ausgang finden, ohne einen
+                    Rutschvorgang zwischen zwei Halten zweimal zu vollziehen.</div>
+                <div class="pulsating" data-command="proceed">Hier tippen oder [SPACE] drücken, um die Rutschpartie zu
+                    starten.</div>
+            </div>
+        </div>
+    </template>
+    <template id="congrats">
+        <div class="dialog">
+            <div>
+                <div>Gut gemacht!</div>
+                <div class="pulsating" data-command="proceed">Hier tippen oder [SPACE] drücken, um mit Level
+                    <span></span> fortzufahren.
+                </div>
+                <div class="pulsating" data-command="replay">Hier tippen oder [R] drücken, um den Level noch einmal zu
+                    spielen.</div>
+                <div class="final" data-command="restart">Gratulation!<br>Du hast den letzten Ausgang erreicht.</div>
+            </div>
+        </div>
+    </template>
+    <template id="settings">
+        <div class="dialog">
+            <div>
+                <div>Level wählen:</div>
+                <div class="level-list"></div>
+            </div>
+        </div>
+    </template>
+    <script id="levels" type="application/json">
+    [
+        {
+            "thresholds": [
+              8,
+              11,
+              13
+            ],
+            "basePoints": 0,
+            "name": "Mini Easter",
+            "data": [
+              "###YY#T#",
+              "X $YO$ P",
+              "T      T",
+              "Y   T  Y",
+              "TO    TY",
+              "#T$    #",
+              "Y  T$ OT",
+              "YTY#TT##"
+            ],
+            "connections": [
+              {
+                "src": {
+                  "x": 4,
+                  "y": 1
+                },
+                "dst": {
+                  "x": 6,
+                  "y": 6
+                }
+              },
+              {
+                "src": {
+                  "x": 6,
+                  "y": 6
+                },
+                "dst": {
+                  "x": 1,
+                  "y": 4
+                }
+              },
+              {
+                "src": {
+                  "x": 1,
+                  "y": 4
+                },
+                "dst": {
+                  "x": 4,
+                  "y": 1
+                }
+              }
+            ]
+          },
+          {
+            "thresholds": [
+              4,
+              5,
+              6
+            ],
+            "basePoints": 2,
+            "name": "Midi Easter",
+            "data": [
+              "OY T    $ Y$Y",
+              " X          Y",
+              "  T # T   $O ",
+              " T       T  T",
+              "#Y   #  TT# T",
+              "Y T $    Y ##",
+              "      Y T $  ",
+              "TT   Y  Y#Y T",
+              " $ #    # $T ",
+              "  $ # Y   T  ",
+              "T    T     P#",
+              "  Y $  Y T  Y"
+            ],
+            "connections": [
+              {
+                "src": {
+                  "x": 0,
+                  "y": 0
+                },
+                "dst": {
+                  "x": 11,
+                  "y": 2
+                }
+              },
+              {
+                "src": {
+                  "x": 11,
+                  "y": 2
+                },
+                "dst": {
+                  "x": 0,
+                  "y": 0
+                }
+              }
+            ]
+          }
+    ]
+    </script>
+</body>
+
+</html>
