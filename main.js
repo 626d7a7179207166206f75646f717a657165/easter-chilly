@@ -121,6 +121,7 @@
     };
     let autoplayIdx = 0;
     let autoplayMoves = '';
+    let visited = new Set();
     let level = {
         origData: [],
         connections: [],
@@ -140,7 +141,6 @@
     let state = State.PreInit;
     let prevState;
     let t0, t1, animationDuration;
-    let pointsEarned;
     let isMoving = false;
     let exitReached = false;
     let holeEntered = false;
@@ -251,15 +251,32 @@
     }
 
     function checkAutoplay() {
-        if (state === State.Autoplay) {
-            if (autoplayIdx < autoplayMoves.length) {
-                const direction = autoplayMoves[autoplayIdx];
-                ++autoplayIdx;
-                moveTo(direction);
+        if (state !== State.Autoplay)
+            return;
+        if (autoplayIdx < autoplayMoves.length) {
+            const direction = autoplayMoves[autoplayIdx];
+            ++autoplayIdx;
+            const { x, y } = player;
+            moveTo(direction);
+            if (x === player.dest.x && y === player.dest.y) {
+                setState(State.LevelEnd);
+                setTimeout(() => {
+                    alert(`Invalid move ${direction} at ${x},${y} after ${autoplayMoves.substring(0, autoplayIdx - 1)}`);
+                }, 50);
+                return;
             }
-            else {
-                setState(State.Playing);
+            const key = `${x},${y} ➞ ${player.dest.x},${player.dest.y}`;
+            if (visited.has(key)) {
+                setState(State.LevelEnd);
+                setTimeout(() => {
+                    alert(`Invalid move! Edge ${key} visited twice after ${autoplayMoves.substring(0, autoplayIdx - 1)}`);
+                }, 50);
+                return;
             }
+            visited.add(key);
+        }
+        else {
+            setState(State.Playing);
         }
     }
 
@@ -486,6 +503,7 @@
                 }
                 if (hasMoved) {
                     player.moves.push(move);
+                    el.path.value = player.moves.join('');
                 }
                 break;
             default:
@@ -632,6 +650,7 @@
             replayLevel();
         }, { capture: true, once: true });
         t0 = performance.now();
+        console.info(`Level completed in ${player.moves.length} moves: ${player.moves.join('')}`);
     }
 
     function setLevel(levelData) {
@@ -672,6 +691,7 @@
             return;
         player.moves = [];
         restartGame();
+        visited.clear();
         autoplayIdx = 0;
         autoplayMoves = el.path.value;
         setState(State.Autoplay);
@@ -816,7 +836,7 @@
         el.levelNum = document.querySelector('#level-num');
         el.moveCount = document.querySelector('#move-count');
         el.extras = document.querySelector('#extras');
-        el.path = document.querySelector('#path');
+        el.path = document.querySelector('input#path');
         el.chooseLevel = document.querySelector('#choose-level');
         el.chooseLevel.addEventListener('click', showLevelSelectionScreen);
         el.loudspeaker = document.querySelector('#loudspeaker');

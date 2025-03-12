@@ -58,7 +58,7 @@
         body {
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             height: 100vh;
         }
@@ -66,6 +66,20 @@
         input {
             font-family: 'VT323', monospace;
             font-size: 16px;
+            width: 100%;
+        }
+
+        main,
+        footer {
+            width: 100%;
+            padding: 1ex 1em;
+        }
+
+        footer {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 1em;
         }
 
         main {
@@ -220,11 +234,8 @@
             max-width: var(--game-width);
         }
 
-        #path {
-            font-size: 65%;
-            max-width: fit-content;
-            letter-spacing: .07em;
-            margin-right: 0.5em;
+        input#path {
+            font-size: 1rem;
         }
 
         .level-list {
@@ -239,11 +250,12 @@
         }
 
         button {
-            padding: 5px;
-            height: 32px;
+            padding: 1ex 1em;
             border-radius: 0;
             border: 2px solid var(--text-color);
             cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
         }
 
         .final {
@@ -253,7 +265,6 @@
         .interactive {
             cursor: pointer;
         }
-        
     </style>
     <style id="extra-styles"></style>
 </head>
@@ -275,9 +286,6 @@
                 <div>Züge <span id="move-count" title="# moves">0</span></div>
             </div>
             <div id="game"></div>
-            <div id="extras">
-                <div><input type="text" id="path"></input> <button id="autoplay">Autoplay</button></div>
-            </div>
         </div>
         <div id="controls" class="hidden">
             <div class="tile empty"></div>
@@ -291,6 +299,15 @@
             <div class="tile empty"></div>
         </div>
     </main>
+
+    <footer>
+        <div style="flex-grow: 1;">
+            <input type="text" id="path"></input>
+        </div>
+        <div style="flex-grow: 0;">
+            <button id="autoplay">Autoplay</button>
+        </div>
+    </footer>
 
     <dialog id="splash">
         <div>
