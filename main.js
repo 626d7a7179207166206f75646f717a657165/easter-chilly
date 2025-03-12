@@ -90,7 +90,7 @@
         static Playing = 1;
         static LevelEnd = 2;
         static GameEnd = 3;
-        static SettingsScreen = 4;
+        static LevelSelectionScreen = 4;
         static ProgressScreen = 5;
         static Autoplay = 6;
     }
@@ -429,9 +429,9 @@
                     e.preventDefault();
                 }
                 break;
-            case State.SettingsScreen:
+            case State.LevelSelectionScreen:
                 if (e.type === 'keydown' && e.key === 'Escape') {
-                    el.settingsDialog.close();
+                    el.levelSelectionDialog.close();
                     restoreState();
                     e.preventDefault();
                     return;
@@ -478,7 +478,7 @@
                         break;
                     case 'Escape':
                         if (e.type === 'keydown') {
-                            showSettingsScreen();
+                            showLevelSelectionScreen();
                             e.preventDefault();
                             return;
                         }
@@ -491,7 +491,7 @@
             default:
                 if (e.type === 'keydown' && e.key === 'Escape') {
                     if (state != State.SplashScreen) {
-                        showSettingsScreen();
+                        showLevelSelectionScreen();
                     }
                     e.preventDefault();
                     return;
@@ -723,10 +723,10 @@
         }, { capture: true, once: true });
     }
 
-    function showSettingsScreen() {
-        setState(State.SettingsScreen);
-        el.settingsDialog.showModal();
-        const lvlList = el.settingsDialog.querySelector('.level-list');
+    function showLevelSelectionScreen() {
+        setState(State.LevelSelectionScreen);
+        el.levelSelectionDialog.showModal();
+        const lvlList = el.levelSelectionDialog.querySelector('.level-list');
         const container = document.createElement('div');
         for (const [i, level] of Object.entries(LEVELS)) {
             const lvlName = level.name || '<?>';
@@ -734,7 +734,7 @@
             div.textContent = `Level ${parseInt(i) + 1}: ${lvlName}`;
             div.dataset.levelIdx = i;
             div.addEventListener('click', e => {
-                el.settingsDialog.close();
+                el.levelSelectionDialog.close();
                 gotoLevel(parseInt(e.target.dataset.levelIdx));
             });
             container.appendChild(div);
@@ -818,7 +818,7 @@
         el.extras = document.querySelector('#extras');
         el.path = document.querySelector('#path');
         el.chooseLevel = document.querySelector('#choose-level');
-        el.chooseLevel.addEventListener('click', showSettingsScreen);
+        el.chooseLevel.addEventListener('click', showLevelSelectionScreen);
         el.loudspeaker = document.querySelector('#loudspeaker');
         el.loudspeaker.addEventListener('click', checkAudio);
         el.autoplayButton = document.querySelector('#autoplay');
@@ -826,7 +826,7 @@
         document.querySelector('#restart-level').addEventListener('click', resetLevel);
         el.splashDialog = document.querySelector("dialog#splash");
         el.congratsDialog = document.querySelector("dialog#congrats");
-        el.settingsDialog = document.querySelector("dialog#settings");
+        el.levelSelectionDialog = document.querySelector("dialog#settings");
         player.el = document.createElement('span');
         player.el.className = `tile penguin ${Tiles.PenguinUpright}`;
         setupAudio();
