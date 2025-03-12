@@ -410,6 +410,7 @@
             case State.GameEnd:
                 if (e.type === 'keypress') {
                     if (e.key === 'r') {
+                        el.congratsDialog.close();
                         replayLevel();
                     }
                     e.preventDefault();
@@ -418,9 +419,11 @@
             case State.LevelEnd:
                 if (e.type === 'keypress') {
                     if (e.key === ' ') {
+                        el.congratsDialog.close();
                         gotoNextLevel();
                     }
                     else if (e.key === 'r') {
+                        el.congratsDialog.close();
                         replayLevel();
                     }
                     e.preventDefault();
@@ -428,7 +431,7 @@
                 break;
             case State.SettingsScreen:
                 if (e.type === 'keydown' && e.key === 'Escape') {
-                    removeOverlay();
+                    el.settingsDialog.close();
                     restoreState();
                     e.preventDefault();
                     return;
@@ -436,6 +439,7 @@
                 break;
             case State.SplashScreen:
                 if (e.type === 'keypress' && e.key === ' ') {
+                    el.splashDialog.close();
                     e.preventDefault();
                     play();
                 }
@@ -607,22 +611,27 @@
         playSound("exit");
         standUpright();
         setState(State.LevelEnd);
-        const congrats = el.congratsTemplate.content.cloneNode(true);
-        congrats.querySelector('div.pulsating > span').textContent = level.currentIdx + 1 + 1;
-        el.proceed = congrats.querySelector('[data-command="proceed"]');
+        el.congratsDialog.querySelectorAll("[data-command]").forEach(el => el.classList.remove('hidden'));
+        el.congratsDialog.showModal();
+        el.congratsDialog.querySelector('div.pulsating > span').textContent = level.currentIdx + 1 + 1;
+        el.proceed = el.congratsDialog.querySelector('[data-command="proceed"]');
         if (level.currentIdx + 1 < LEVELS.length) {
-            congrats.querySelector('[data-command="restart"]').remove();
-            el.proceed.addEventListener('click', gotoNextLevel, { capture: true, once: true });
+            el.congratsDialog.querySelector('[data-command="restart"]').classList.add('hidden');
+            el.proceed.addEventListener('click', () => {
+                el.congratsDialog.close();
+                gotoNextLevel();
+            }, { capture: true, once: true });
         }
         else {
-            el.proceed.remove();
+            el.proceed.classList.add('hidden');
             setState(State.GameEnd);
         }
-        el.replay = congrats.querySelector('[data-command="replay"]');
-        el.replay.addEventListener('click', replayLevel, { capture: true, once: true });
-        el.overlayBox.replaceChildren(congrats);
+        el.replay = el.congratsDialog.querySelector('[data-command="replay"]');
+        el.replay.addEventListener('click', () => {
+            el.congratsDialog.close();
+            replayLevel();
+        }, { capture: true, once: true });
         t0 = performance.now();
-        showOverlay();
     }
 
     function setLevel(levelData) {
@@ -658,17 +667,6 @@
         state = newState;
     }
 
-    function showOverlay() {
-        el.overlay.classList.remove('hidden');
-        el.overlayBox.classList.remove('hidden');
-    }
-
-    function removeOverlay() {
-        el.overlay.classList.add('hidden');
-        el.overlayBox.classList.add('hidden');
-        el.overlayBox.replaceChildren();
-    }
-
     function autoplay() {
         if (el.path.value.length === 0)
             return;
@@ -680,9 +678,7 @@
         checkAutoplay();
     }
     function play() {
-        el.overlayBox.removeEventListener('click', play);
         setState(State.Playing);
-        removeOverlay();
         checkAudio();
     }
 
@@ -720,38 +716,30 @@
 
     function showSplashScreen() {
         setState(State.SplashScreen);
-        const splash = el.splashTemplate.content.cloneNode(true);
-        el.overlayBox.replaceChildren(splash);
-        el.overlayBox.addEventListener('click', play, { capture: true, once: true });
-        showOverlay();
+        el.splashDialog.showModal();
+        el.splashDialog.addEventListener('click', () => {
+            el.splashDialog.close();
+            play();
+        }, { capture: true, once: true });
     }
 
     function showSettingsScreen() {
         setState(State.SettingsScreen);
-        const settings = el.settingsTemplate.content.cloneNode(true);
-        const lvlList = settings.querySelector('.level-list');
-        const padding = 1 + Math.floor(Math.log10(LEVELS.length));
-        const highestAccessibleLevelNum = maxLevelNum();
-        let i = 0;
-        for (const level of LEVELS) {
+        el.settingsDialog.showModal();
+        const lvlList = el.settingsDialog.querySelector('.level-list');
+        const container = document.createElement('div');
+        for (const [i, level] of Object.entries(LEVELS)) {
             const lvlName = level.name || '<?>';
             const div = document.createElement('div');
-            div.textContent = `Level ${(i + 1).toString().padStart(padding, ' ')}: ${lvlName}`;
-            div.setAttribute('data-level-idx', i);
-            if (i < highestAccessibleLevelNum) {
-                div.addEventListener('click', e => {
-                    removeOverlay();
-                    gotoLevel(e.target.getAttribute('data-level-idx') | 0);
-                });
-            }
-            else {
-                div.classList.add('locked');
-            }
-            lvlList.appendChild(div);
-            ++i;
+            div.textContent = `Level ${parseInt(i) + 1}: ${lvlName}`;
+            div.dataset.levelIdx = i;
+            div.addEventListener('click', e => {
+                el.settingsDialog.close();
+                gotoLevel(parseInt(e.target.dataset.levelIdx));
+            });
+            container.appendChild(div);
         }
-        el.overlayBox.replaceChildren(settings);
-        showOverlay();
+        lvlList.replaceChildren(container);
     }
 
     function resetLevel() {
@@ -829,8 +817,6 @@
         el.moveCount = document.querySelector('#move-count');
         el.extras = document.querySelector('#extras');
         el.path = document.querySelector('#path');
-        el.overlay = document.querySelector('#overlay');
-        el.overlayBox = document.querySelector('#overlay-box');
         el.chooseLevel = document.querySelector('#choose-level');
         el.chooseLevel.addEventListener('click', showSettingsScreen);
         el.loudspeaker = document.querySelector('#loudspeaker');
@@ -838,9 +824,9 @@
         el.autoplayButton = document.querySelector('#autoplay');
         el.autoplayButton.addEventListener('click', autoplay);
         document.querySelector('#restart-level').addEventListener('click', resetLevel);
-        el.splashTemplate = document.querySelector("#splash");
-        el.congratsTemplate = document.querySelector("#congrats");
-        el.settingsTemplate = document.querySelector("#settings");
+        el.splashDialog = document.querySelector("dialog#splash");
+        el.congratsDialog = document.querySelector("dialog#congrats");
+        el.settingsDialog = document.querySelector("dialog#settings");
         player.el = document.createElement('span');
         player.el.className = `tile penguin ${Tiles.PenguinUpright}`;
         setupAudio();

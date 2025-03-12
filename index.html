@@ -55,12 +55,20 @@
             font-size: 32px;
         }
 
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
         input {
             font-family: 'VT323', monospace;
             font-size: 16px;
         }
 
-        #main-container {
+        main {
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
@@ -70,50 +78,47 @@
             align-content: center;
         }
 
-        #overlay {
-            background-color: black;
+        dialog {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            opacity: 0.4;
-            z-index: 1000;
-        }
-
-        #overlay-box {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: transparent;
-            z-index: 1004;
-        }
-
-        .dialog {
-            opacity: unset;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
             text-align: center;
-            min-height: 100vh;
             padding: 10px;
-        }
-
-        .dialog>div {
             background-color: var(--background-color);
             border: 5px solid var(--text-color);
+            display: none;
+        }
+
+
+        dialog[open] {
+            display: block;
+        }
+
+        dialog * {
+            user-select: none;
+        }
+
+        dialog::backdrop {
+            background-color: color-mix(in srgb, var(--background-color) 50%, transparent);
+        }
+
+        dialog>div {
             padding: 20px;
             cursor: pointer;
             margin: 0 20%;
             box-sizing: content-box;
             max-height: 75vh;
             overflow: auto;
+            margin: 0 auto;
+            width: fit-content;
         }
 
-        .dialog>div>div {
+        dialog>div>div {
             margin-bottom: 20px;
         }
 
@@ -282,7 +287,7 @@
 </head>
 
 <body>
-    <div id="main-container">
+    <main>
         <div id="game-container">
             <div id="menu">
                 <span>
@@ -313,43 +318,37 @@
             <div class="interactive tile arrow-down"></div>
             <div class="tile empty"></div>
         </div>
-    </div>
-    <div id="overlay" class="hidden"></div>
-    <div id="overlay-box" class="hidden"></div>
+    </main>
 
-    <template id="splash">
-        <div class="dialog">
-            <div>
-                <div>Chilly, der Pinguin, braucht deine Hilfe. Geleite ihn über die Ostereier zum Ausgang!
-                </div>
-                <div>In dieser Osterspezialausgabe sollst du den längsten Weg zum Ausgang finden, ohne einen
-                    Rutschvorgang zwischen zwei Halten zweimal zu vollziehen.</div>
-                <div class="pulsating" data-command="proceed">Hier tippen oder [SPACE] drücken, um die Rutschpartie zu
-                    starten.</div>
+    <dialog id="splash">
+        <div>
+            <div>Chilly, der Pinguin, braucht deine Hilfe. Geleite ihn über die Ostereier zum Ausgang!
             </div>
+            <div>In dieser Osterspezialausgabe sollst du den längsten Weg zum Ausgang finden, ohne einen
+                Rutschvorgang zwischen zwei Halten zweimal zu vollziehen.</div>
+            <div class="pulsating" data-command="proceed">Hier tippen oder [SPACE] drücken, um die Rutschpartie zu
+                starten.</div>
         </div>
-    </template>
-    <template id="congrats">
-        <div class="dialog">
-            <div>
-                <div>Gut gemacht!</div>
-                <div class="pulsating" data-command="proceed">Hier tippen oder [SPACE] drücken, um mit Level
-                    <span></span> fortzufahren.
-                </div>
-                <div class="pulsating" data-command="replay">Hier tippen oder [R] drücken, um den Level noch einmal zu
-                    spielen.</div>
-                <div class="final" data-command="restart">Gratulation!<br>Du hast den letzten Ausgang erreicht.</div>
+    </dialog>
+    <dialog id="congrats">
+        <div>
+            <div>Gut gemacht!</div>
+            <div class="pulsating" data-command="proceed">Hier tippen oder [SPACE] drücken, um mit Level
+                <span></span> fortzufahren.
             </div>
+            <div class="pulsating" data-command="replay">Hier tippen oder [R] drücken, um den Level noch einmal zu
+                spielen.</div>
+            <div class="final" data-command="restart">Gratulation!<br>Du hast den letzten Ausgang erreicht.</div>
         </div>
-    </template>
-    <template id="settings">
-        <div class="dialog">
-            <div>
-                <div>Level wählen:</div>
-                <div class="level-list"></div>
-            </div>
+    </dialog>
+    <dialog id="settings">
+        <div>
+            <div>Level wählen:</div>
+            <div class="level-list"></div>
         </div>
-    </template>
+    </dialog>
+
+
     <script id="levels" type="application/json">
     [
         {
