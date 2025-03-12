@@ -4,6 +4,8 @@
 
 *A mini-game inspired by Pokémon Crystal Ice Path*
 
+<img width="335" alt="grafik" src="https://github.com/user-attachments/assets/0043d852-0d2d-4b6e-bd4c-e1beafba8aa1" />
+
 
 ## Trivia
 
