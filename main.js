@@ -73,7 +73,7 @@
         static PenguinDown = 'penguin-down-easter';
     }
 
-    const Tiles = (function(theme) {
+    const Tiles = (function (theme) {
         switch (theme) {
             case Themes.Xmas:
                 return XmasTiles;
@@ -555,7 +555,7 @@
                         tile.classList.add('flower');
                         break;
                     case Tile.Tree:
-                        tile.classList.add(theme === Themes.Xmas ? 'snowy-tree': 'tree');
+                        tile.classList.add(theme === Themes.Xmas ? 'snowy-tree' : 'tree');
                         break;
                     case Tile.Exit:
                         tile.classList.add('exit');
@@ -772,7 +772,7 @@
         resetLevel();
     }
 
-    function resumeAudio(){
+    function resumeAudio() {
         return audioCtx.resume();
     }
 
