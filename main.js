@@ -698,12 +698,12 @@
             return;
         player.moves = [];
         restartGame();
-        visited.clear();
         autoplayIdx = 0;
         autoplayMoves = el.path.value;
         setState(State.Autoplay);
         checkAutoplay();
     }
+
     function play() {
         setState(State.Playing);
         visited.clear();
@@ -770,6 +770,8 @@
     }
 
     function resetLevel() {
+        visited.clear();
+        state = State.Playing;
         exitReached = false;
         let levelData = LEVELS[level.currentIdx];
         el.path.textContent = '';
@@ -838,7 +840,7 @@
         el.game.addEventListener('click', onClick);
         el.invalidMoveDialog = document.querySelector('#invalid-move');
         el.invalidMoveDialog.addEventListener('close', () => {
-            restartGame();
+            resetLevel();
         });
         el.extraStyles = document.querySelector('#extra-styles');
         el.levelNum = document.querySelector('#level-num');
@@ -856,7 +858,7 @@
         el.splashDialog = document.querySelector('dialog#splash');
         el.congratsDialog = document.querySelector('dialog#congrats');
         el.congratsDialog.addEventListener('close', () => {
-            restartGame();
+            resetLevel();
         });
         el.levelSelectionDialog = document.querySelector("dialog#level-selection");
         player.el = document.createElement('span');
