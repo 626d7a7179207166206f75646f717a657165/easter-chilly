@@ -208,6 +208,18 @@
         checkAutoplay();
     }
 
+    function checkEdge(x0, y0, x1, y1) {
+        if (state === State.Autoplay)
+            return;
+        const key = `${x0},${y0} ➞ ${x1},${y1}`;
+        if (visited.has(key)) {
+            el.invalidMoveDialog.showModal();
+            return false;
+        }
+        visited.add(key);
+        return true;
+    }
+
     function checkAutoplay() {
         if (state !== State.Autoplay)
             return;
@@ -219,7 +231,7 @@
             if (x === player.dest.x && y === player.dest.y) {
                 setState(State.LevelEnd);
                 setTimeout(() => {
-                    alert(`Invalid move ${direction} at ${x},${y} after ${autoplayMoves.substring(0, autoplayIdx - 1)}`);
+                    alert(`Ungültiger Zug ${direction} nach ${x},${y} bei ${autoplayMoves.substring(0, autoplayIdx - 1)}`);
                 }, 50);
                 return;
             }
@@ -227,7 +239,7 @@
             if (visited.has(key)) {
                 setState(State.LevelEnd);
                 setTimeout(() => {
-                    alert(`Invalid move! Edge ${key} visited twice after ${autoplayMoves.substring(0, autoplayIdx - 1)}`);
+                    alert(`Ungültiger Zug! Kante ${key} zum zweiten Mal besucht bei ${autoplayMoves.substring(0, autoplayIdx - 1)}`);
                 }, 50);
                 return;
             }
@@ -323,6 +335,7 @@
             dist += 1;
         }
         if (dist > 0) {
+            checkEdge(x, y, player.dest.x, player.dest.y);
             player.distance += dist;
             isMoving = true;
             if (exitReached || holeEntered) {
@@ -450,13 +463,6 @@
                     case 'ArrowRight':
                         hasMoved = moveRight();
                         move = 'R';
-                        break;
-                    case 'Escape':
-                        if (e.type === 'keydown') {
-                            showLevelSelectionScreen();
-                            e.preventDefault();
-                            return;
-                        }
                         break;
                 }
                 if (hasMoved) {
@@ -598,7 +604,6 @@
             console.info(`Level completed in ${player.moves.length} moves: ${player.moves.join('')}`);
         }
         el.congratsDialog.querySelectorAll("[data-command]").forEach(el => el.classList.remove('hidden'));
-        el.congratsDialog.showModal();
         el.congratsDialog.querySelector('div.pulsating>span').textContent = level.currentIdx + 1 + 1;
         const stars = el.congratsDialog.querySelectorAll('.stars>span');
         stars.forEach(star => star.classList.replace('star', 'star-pale'));
@@ -610,6 +615,29 @@
                 stars[i].classList.add(`pulse${i}`);
             }
         }
+        const eggsLeft = Object.values(level.collectibles).some(item => item === Tile.Coin);
+        if (!eggsLeft) {
+            el.congratsDialog.querySelector('[data-eggs-left]').classList.add('hidden');
+        }
+        el.congratsDialog.querySelector('h2').textContent = (function (numStars) {
+            switch (numStars) {
+                case 3:
+                    return "Perfekt!";
+                case 2:
+                    return "Sehr gut, aber noch nicht perfekt!";
+                case 1:
+                    return "Gut gemacht, aber es gibt noch Potenzial!";
+                default:
+                    const poorMessages = [
+                        "Da geht noch so einiges …",
+                        "Das kannst du besser!",
+                        "Vielleicht noch einmal versuchen?",
+                        "Übung macht den Meister!",
+                        "Nicht aufgeben, weiter üben!",
+                    ];
+                    return poorMessages[Math.floor(Math.random() * poorMessages.length)];
+            }
+        })(numStars);
         el.proceed = el.congratsDialog.querySelector('[data-command="proceed"]');
         if (level.currentIdx + 1 < LEVELS.length) {
             el.congratsDialog.querySelector('[data-command="restart"]').classList.add('hidden');
@@ -629,6 +657,7 @@
         }, { capture: true, once: true });
         t0 = performance.now();
         setState(State.LevelEnd);
+        el.congratsDialog.showModal();
     }
 
     function setLevel(levelData) {
@@ -677,6 +706,7 @@
     }
     function play() {
         setState(State.Playing);
+        visited.clear();
         checkAudio();
     }
 
@@ -785,9 +815,9 @@
     function setupAudio() {
         audioCtx = new AudioContext();
         gainNode = audioCtx.createGain();
-        gainNode.gain.value = parseFloat(localStorage.getItem("chilly-sound-volume") || "0.5");
+        gainNode.gain.value = parseFloat(localStorage.getItem('chilly-sound-volume') || '0.5');
         gainNode.connect(audioCtx.destination);
-        for (const name of ["coin", "rock", "exit", "teleport", "slide"]) {
+        for (const name of ['coin', 'rock', 'exit', 'teleport', 'slide']) {
             sounds[name] = {};
             fetch(`static/sounds/${name}.mp3`)
                 .then(response => response.arrayBuffer())
@@ -796,7 +826,7 @@
                     sounds[name].buffer = audioBuffer;
                 })
                 .catch(error => {
-                    console.error("Failed to load sound:", error);
+                    console.error('Failed to load sound:', error);
                 });
         }
         checkAudio();
@@ -806,6 +836,10 @@
         LEVELS = JSON.parse(document.querySelector('#levels').textContent);
         el.game = document.querySelector('#game');
         el.game.addEventListener('click', onClick);
+        el.invalidMoveDialog = document.querySelector('#invalid-move');
+        el.invalidMoveDialog.addEventListener('close', () => {
+            restartGame();
+        });
         el.extraStyles = document.querySelector('#extra-styles');
         el.levelNum = document.querySelector('#level-num');
         el.moveCount = document.querySelector('#move-count');
@@ -819,9 +853,12 @@
         el.autoplayButton = document.querySelector('#autoplay');
         el.autoplayButton.addEventListener('click', autoplay);
         document.querySelector('#restart-level').addEventListener('click', resetLevel);
-        el.splashDialog = document.querySelector("dialog#splash");
-        el.congratsDialog = document.querySelector("dialog#congrats");
-        el.levelSelectionDialog = document.querySelector("dialog#settings");
+        el.splashDialog = document.querySelector('dialog#splash');
+        el.congratsDialog = document.querySelector('dialog#congrats');
+        el.congratsDialog.addEventListener('close', () => {
+            restartGame();
+        });
+        el.levelSelectionDialog = document.querySelector("dialog#level-selection");
         player.el = document.createElement('span');
         player.el.className = `tile penguin ${Tiles.PenguinUpright}`;
         setupAudio();
