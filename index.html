@@ -159,6 +159,36 @@
             }
         }
 
+        .star.pulse {
+            animation-name: star-pulse;
+            animation-duration: 340ms;
+            animation-timing-function: cubic-bezier(.21, .66, .9, 1.1);
+            animation-fill-mode: both;
+            animation-iteration-count: 1;
+        }
+
+        .star.pulse.pulse1 {
+            animation-delay: 50ms;
+        }
+
+        .star.pulse.pulse2 {
+            animation-delay: 100ms;
+        }
+
+        @keyframes star-pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
         #game-container {
             position: relative;
             display: flex;
@@ -246,6 +276,10 @@
             white-space: pre;
         }
 
+        .level-list>div>div {
+            cursor: pointer;
+        }
+
         .level-list>div>div:hover {
             background: linear-gradient(to bottom, transparent 50%, #52ed76 50%);
         }
@@ -325,6 +359,11 @@
     <dialog id="congrats">
         <div>
             <h2>Gut gemacht!</h2>
+            <div class="stars">
+                <span class="tile star-pale"></span>
+                <span class="tile star-pale"></span>
+                <span class="tile star-pale"></span>
+            </div>
             <div class="pulsating" data-command="proceed">Hier tippen oder [SPACE] drücken, um mit Level
                 <span></span> fortzufahren.
             </div>
@@ -345,9 +384,9 @@
     [
         {
             "thresholds": [
-              8,
-              11,
-              13
+              22,
+              23,
+              25
             ],
             "basePoints": 0,
             "name": "Mini-Eiersuche",
@@ -396,9 +435,9 @@
           },
           {
             "thresholds": [
-              4,
-              5,
-              6
+              73,
+              75,
+              77
             ],
             "basePoints": 2,
             "name": "Ganz schön kompliziert",

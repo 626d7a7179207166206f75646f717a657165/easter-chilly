@@ -24,7 +24,7 @@
 (function (window) {
     "use strict";
 
-    const DEBUG = false;
+    const DEBUG = true;
 
     class Tile {
         static Size = 32;
@@ -582,16 +582,34 @@
         }
     }
 
+    function getNumStars() {
+        const numMoves = state === State.Autoplay ? autoplayMoves.length : player.moves.length;
+        // Make sure the thresholds are in proper order
+        const sortedThresholds = [...LEVELS[level.currentIdx].thresholds].sort((a, b) => b - a);
+        const thresholdIndex = sortedThresholds.findIndex(threshold => numMoves >= threshold);
+        const numStars = thresholdIndex === -1 ? 0 : 3 - thresholdIndex;
+        return numStars;
+    }
+
     function onExitReached() {
         playSound("exit");
         standUpright();
         if (state !== State.Autoplay) {
             console.info(`Level completed in ${player.moves.length} moves: ${player.moves.join('')}`);
         }
-        setState(State.LevelEnd);
         el.congratsDialog.querySelectorAll("[data-command]").forEach(el => el.classList.remove('hidden'));
         el.congratsDialog.showModal();
-        el.congratsDialog.querySelector('div.pulsating > span').textContent = level.currentIdx + 1 + 1;
+        el.congratsDialog.querySelector('div.pulsating>span').textContent = level.currentIdx + 1 + 1;
+        const stars = el.congratsDialog.querySelectorAll('.stars>span');
+        stars.forEach(star => star.classList.replace('star', 'star-pale'));
+        const numStars = getNumStars();
+        for (let i = 0; i < numStars; ++i) {
+            stars[i].classList.replace('star-pale', 'star');
+            stars[i].classList.add('pulse')
+            if (i > 0) {
+                stars[i].classList.add(`pulse${i}`);
+            }
+        }
         el.proceed = el.congratsDialog.querySelector('[data-command="proceed"]');
         if (level.currentIdx + 1 < LEVELS.length) {
             el.congratsDialog.querySelector('[data-command="restart"]').classList.add('hidden');
@@ -610,6 +628,7 @@
             replayLevel();
         }, { capture: true, once: true });
         t0 = performance.now();
+        setState(State.LevelEnd);
     }
 
     function setLevel(levelData) {
