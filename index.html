@@ -84,7 +84,7 @@
 
         main {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             flex-wrap: wrap;
             justify-items: center;
             justify-content: center;
@@ -98,13 +98,15 @@
             left: 50%;
             transform: translate(-50%, -50%);
             flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
+            max-height: 95%;
+            height: fit-content;
             padding: 10px;
             background-color: var(--background-color);
             border: 5px solid var(--text-color);
             display: none;
+            overflow: auto;
+            max-width: 50em;
+            width: 90%;
         }
 
 
@@ -118,21 +120,21 @@
 
         dialog::backdrop {
             background-color: color-mix(in srgb, var(--background-color) 50%, transparent);
+            backdrop-filter: blur(2px);
+        }
+
+        dialog h2 {
+            font-weight: normal;
+            font-size: 161%;
+            margin-bottom: 2ex;
         }
 
         dialog>div {
             padding: 20px;
-            cursor: pointer;
-            margin: 0 20%;
-            box-sizing: content-box;
-            max-height: 75vh;
-            overflow: auto;
-            margin: 0 auto;
-            width: fit-content;
         }
 
         dialog>div>div {
-            margin-bottom: 20px;
+            margin-bottom: 2ex;
         }
 
         .pulsating {
@@ -196,9 +198,7 @@
             justify-content: center;
         }
 
-
         #controls {
-            grid-area: controls;
             display: grid;
             margin: 10px 0 0 10px;
             grid-template-columns: repeat(3, 32px);
@@ -236,6 +236,7 @@
 
         input#path {
             font-size: 1rem;
+            padding: 2px;
         }
 
         .level-list {
@@ -250,7 +251,7 @@
         }
 
         button {
-            padding: 1ex 1em;
+            padding: 2px 1em;
             border-radius: 0;
             border: 2px solid var(--text-color);
             cursor: pointer;
