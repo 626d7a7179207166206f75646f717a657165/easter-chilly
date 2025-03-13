@@ -98,6 +98,7 @@
     class StorageKey {
         static LevelNum = 'easter-chilly.level';
         static MaxLevelNum = 'easter-chilly.max-level';
+        static SoundEnabled = 'easter-chilly.sound-enabled';
     }
 
     const POINTS = {
@@ -115,7 +116,6 @@
         world: { x: 0, y: 0 },
         dest: { x: 0, y: 0 },
         el: null,
-        score: 0,
         moves: [],
         distance: 0,
     };
@@ -126,7 +126,6 @@
         origData: [],
         connections: [],
         data: [],
-        score: 0,
         width: 0,
         height: 0,
         cellAt: function (x, y) {
@@ -628,6 +627,9 @@
     function onExitReached() {
         playSound("exit");
         standUpright();
+        if (state !== State.Autoplay) {
+            console.info(`Level completed in ${player.moves.length} moves: ${player.moves.join('')}`);
+        }
         setState(State.LevelEnd);
         el.congratsDialog.querySelectorAll("[data-command]").forEach(el => el.classList.remove('hidden'));
         el.congratsDialog.showModal();
@@ -650,7 +652,6 @@
             replayLevel();
         }, { capture: true, once: true });
         t0 = performance.now();
-        console.info(`Level completed in ${player.moves.length} moves: ${player.moves.join('')}`);
     }
 
     function setLevel(levelData) {
@@ -704,7 +705,6 @@
 
     function replayLevel() {
         el.replay.addEventListener('click', replayLevel, { capture: true, once: true });
-        player.score -= level.score;
         resetLevel();
         play();
     }
@@ -764,7 +764,6 @@
 
     function resetLevel() {
         exitReached = false;
-        level.score = 0;
         let levelData = LEVELS[level.currentIdx];
         el.path.textContent = '';
         if (window.location.hash) {
@@ -797,8 +796,9 @@
     }
 
     function checkAudio(e) {
-        if (typeof e === 'object' && e.type === 'click') {
+        if (e && e.type === 'click' && e.target === el.loudspeaker) {
             soundEnabled = !soundEnabled;
+            localStorage.setItem(StorageKey.SoundEnabled, soundEnabled);
         }
         if (!soundEnabled) {
             el.loudspeaker.classList.replace('speaker', 'speaker-muted');
@@ -841,6 +841,7 @@
         el.chooseLevel.addEventListener('click', showLevelSelectionScreen);
         el.loudspeaker = document.querySelector('#loudspeaker');
         el.loudspeaker.addEventListener('click', checkAudio);
+        soundEnabled = localStorage.getItem(StorageKey.SoundEnabled) === "true";
         el.autoplayButton = document.querySelector('#autoplay');
         el.autoplayButton.addEventListener('click', autoplay);
         document.querySelector('#restart-level').addEventListener('click', resetLevel);
