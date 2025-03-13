@@ -631,9 +631,9 @@
                     const poorMessages = [
                         "Da geht noch so einiges …",
                         "Das kannst du besser!",
-                        "Vielleicht noch einmal versuchen?",
+                        "Ein gutes Stück entfernt vom Optimum.",
                         "Übung macht den Meister!",
-                        "Nicht aufgeben, weiter üben!",
+                        "Nicht aufgeben, weiter probieren!",
                     ];
                     return poorMessages[Math.floor(Math.random() * poorMessages.length)];
             }
