@@ -41,48 +41,13 @@
         static Hole = 'O';
     };
 
-    class Themes {
-        static Default = 0;
-        static Xmas = 1;
-        static Easter = 2;
-    }
-
-    const theme = Themes.Easter;
-
-    class RegularTiles {
-        static PenguinUpright = 'penguin-standing';
-        static PenguinLeft = 'penguin-left';
-        static PenguinRight = 'penguin-right';
-        static PenguinUp = 'penguin-up';
-        static PenguinDown = 'penguin-down';
-    }
-
-    class XmasTiles {
-        static PenguinUpright = 'penguin-standing-xmas';
-        static PenguinLeft = 'penguin-left-xmas';
-        static PenguinRight = 'penguin-right-xmas';
-        static PenguinUp = 'penguin-up-xmas';
-        static PenguinDown = 'penguin-down-xmas';
-    }
-
-    class EasterTiles {
+    class Tiles {
         static PenguinUpright = 'penguin-standing-easter';
         static PenguinLeft = 'penguin-left-easter';
         static PenguinRight = 'penguin-right-easter';
         static PenguinUp = 'penguin-up-easter';
         static PenguinDown = 'penguin-down-easter';
     }
-
-    const Tiles = (function (theme) {
-        switch (theme) {
-            case Themes.Xmas:
-                return XmasTiles;
-            case Themes.Easter:
-                return EasterTiles;
-            default:
-                return RegularTiles;
-        }
-    })(theme);
 
     class State {
         static PreInit = -1;
@@ -101,13 +66,7 @@
         static SoundEnabled = 'easter-chilly.sound-enabled';
     }
 
-    const POINTS = {
-        $: 5,
-        G: 20,
-    };
-
     let LEVELS;
-    const START_LEVEL = 0;
     const DeceleratingEasing = bezier(.34, .87, 1, 1);
     const el = {};
     let player = {
@@ -147,7 +106,7 @@
     let sounds = {};
     let audioCtx;
     let gainNode;
-    let soundEnabled = true;
+    let soundEnabled;
 
     function squared(x) {
         return x * x;
@@ -292,7 +251,7 @@
         const x = (player.x + Math.round(dx) + level.width) % level.width;
         const y = (player.y + Math.round(dy) + level.height) % level.height;
         if (level.data[y][x] === Tile.Coin) {
-            level.tiles[y][x].classList.replace(theme === Themes.Xmas ? 'present' : theme === Themes.Easter ? 'egg' : 'coin', 'ice');
+            level.tiles[y][x].classList.replace('egg', 'ice');
             delete level.collectibles[`${x},${y}`];
             level.data[y] = level.data[y].substring(0, x) + Tile.Ice + level.data[y].substring(x + 1);
             playSound("coin");
@@ -552,7 +511,6 @@
                 const item = row[x];
                 const tile = document.createElement('span');
                 tile.className = 'tile';
-                tile.setAttribute('title', `${x},${y}`)
                 switch (item) {
                     case Tile.Rock:
                         tile.classList.add('rock');
@@ -561,7 +519,7 @@
                         tile.classList.add('empty');
                         break;
                     case Tile.Coin:
-                        tile.classList.add(theme === Themes.Xmas ? 'present' : theme === Themes.Easter ? 'egg' : 'coin');
+                        tile.classList.add('egg');
                         level.collectibles[`${x},${y}`] = item;
                         break;
                     case Tile.Gold:
@@ -572,7 +530,7 @@
                         tile.classList.add('flower');
                         break;
                     case Tile.Tree:
-                        tile.classList.add(theme === Themes.Xmas ? 'snowy-tree' : 'tree');
+                        tile.classList.add('tree');
                         break;
                     case Tile.Exit:
                         tile.classList.add('exit');
@@ -780,11 +738,8 @@
     }
 
     function restartGame() {
-        let levelNum = Math.min(LEVELS.length - 1, parseInt(localStorage.getItem(StorageKey.LevelNum)));
+        let levelNum = Math.max(0, Math.min(LEVELS.length - 1, parseInt(localStorage.getItem(StorageKey.LevelNum))));
         if (isNaN(levelNum)) {
-            levelNum = START_LEVEL;
-        }
-        if (levelNum < 0) {
             levelNum = 0;
         }
         level.currentIdx = levelNum;
