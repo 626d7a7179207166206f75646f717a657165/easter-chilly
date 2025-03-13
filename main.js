@@ -76,7 +76,6 @@
         dest: { x: 0, y: 0 },
         el: null,
         moves: [],
-        distance: 0,
     };
     let autoplayIdx = 0;
     let autoplayMoves = '';
@@ -300,9 +299,10 @@
 
     function move(dx, dy) {
         if (isMoving || exitReached)
-            return;
+            return false;
         let hasMoved = false;
         let { x, y } = player;
+        const orig = { x, y };
         let xStep = 0;
         let yStep = 0;
         while ([Tile.Ice, Tile.Coin, Tile.Gold, Tile.Marker, Tile.Empty].includes(level.cellAt(x + dx, y + dy))) {
@@ -335,8 +335,6 @@
             dist += 1;
         }
         if (dist > 0) {
-            checkEdge(x, y, player.dest.x, player.dest.y);
-            player.distance += dist;
             isMoving = true;
             if (exitReached || holeEntered) {
                 player.dest = { x: x + dx, y: y + dy };
@@ -344,6 +342,7 @@
             else {
                 player.dest = { x, y };
             }
+            checkEdge(orig.x, orig.y, player.dest.x, player.dest.y);
             const animationDurationFactor = (state === State.Autoplay ? 66 : 100);
             animationDuration = animationDurationFactor * dist;
             t0 = performance.now();
@@ -619,6 +618,9 @@
         if (!eggsLeft) {
             el.congratsDialog.querySelector('[data-eggs-left]').classList.add('hidden');
         }
+        else {
+            el.congratsDialog.querySelector('[data-eggs-left]').classList.remove('hidden');
+        }
         el.congratsDialog.querySelector('h2').textContent = (function (numStars) {
             switch (numStars) {
                 case 3:
@@ -676,7 +678,6 @@
         }
         el.levelNum.textContent = `Level ${level.currentIdx + 1}`;
         player.moves = [];
-        player.distance = 0;
         updateMoveCounter();
         el.scene = generateScene();
         el.game.replaceChildren(el.scene, player.el);
