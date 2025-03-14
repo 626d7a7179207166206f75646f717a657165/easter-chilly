@@ -255,13 +255,44 @@
                 }, 50);
                 return;
             }
-            const key = `${x},${y} ➞ ${player.dest.x},${player.dest.y}`;
-            if (visited.has(key)) {
-                setState(State.LevelEnd);
-                setTimeout(() => {
-                    alert(`Ungültiger Zug! Kante ${key} zum zweiten Mal besucht bei ${autoplayMoves.substring(0, autoplayIdx - 1)}`);
-                }, 50);
-                return;
+            let key;
+            switch (el.constraint.value) {
+                case Constraint.Edge:
+                    const { dstx, dsty } = (function(holeEntered) {
+                        let dstx, dsty;
+                        if (holeEntered) {
+                            const connection = level.connections.find(conn => conn.src.x === player.dest.x && conn.src.y === player.dest.y);
+                            dstx = connection.dst.x;
+                            dsty = connection.dst.y;
+                        }
+                        else {
+                            dstx = player.dest.x;
+                            dsty = player.dest.y;
+                        }
+                        return { dstx, dsty };
+                    })(holeEntered);
+                    key = `${x},${y} ➞ ${dstx},${dsty}`;
+                    console.debug(`Checking edge ${key}`);
+                    if (visited.has(key)) {
+                        setState(State.LevelEnd);
+                        setTimeout(() => {
+                            alert(`Ungültiger Zug! Kante ${key} zum zweiten Mal besucht bei ${autoplayMoves.substring(0, autoplayIdx - 1)}`);
+                        }, 50);
+                        return;
+                    }
+                    break;
+                case Constraint.Node:
+                    key = `${x},${y}`;
+                    console.debug(`Checking node ${key}`);
+                    if (visited.has(key)) {
+                        el.invalidMoveDialog.dataset.constraint = el.constraint.value;
+                        el.invalidMoveDialog.showModal();
+                        return false;
+                    }
+                    break;
+                default:
+                    console.warn('No constraint selected');
+                    break;
             }
             visited.add(key);
         }
@@ -363,10 +394,14 @@
             else {
                 player.dest = { x, y };
             }
-            // XXX: falling into holes is not properly recorded as a move
             switch (el.constraint.value) {
                 case Constraint.Edge:
-                    checkEdge(orig.x, orig.y, player.dest.x, player.dest.y);
+                    if (holeEntered) {
+                        const connection = level.connections.find(conn => conn.src.x === player.dest.x && conn.src.y === player.dest.y);
+                        checkEdge(orig.x, orig.y, connection.dst.x, connection.dst.y);
+                    } else {
+                        checkEdge(orig.x, orig.y, player.dest.x, player.dest.y);
+                    }
                     break;
                 case Constraint.Node:
                     checkNode(player.dest.x, player.dest.y);
