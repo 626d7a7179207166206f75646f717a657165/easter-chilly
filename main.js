@@ -261,7 +261,9 @@
                     const { dstx, dsty } = (function(holeEntered) {
                         let dstx, dsty;
                         if (holeEntered) {
-                            const connection = level.connections.find(conn => conn.src.x === player.dest.x && conn.src.y === player.dest.y);
+                            let dstx = (player.dest.x + level.width) % level.width;
+                            let dsty = (player.dest.y + level.height) % level.height;
+                            const connection = level.connections.find(conn => conn.src.x === dstx && conn.src.y === dsty);
                             dstx = connection.dst.x;
                             dsty = connection.dst.y;
                         }
@@ -394,11 +396,14 @@
             else {
                 player.dest = { x, y };
             }
+            console.debug(JSON.stringify(player, null, 2), holeEntered, x, y, dx, dy);
             switch (el.constraint.value) {
                 case Constraint.Edge:
                     if (holeEntered) {
-                        const connection = level.connections.find(conn => conn.src.x === player.dest.x && conn.src.y === player.dest.y);
-                        checkEdge(orig.x, orig.y, connection.dst.x, connection.dst.y);
+                        const dstx = (player.dest.x + level.width) % level.width;
+                        const dsty = (player.dest.y + level.height) % level.height;
+                        const connection = level.connections.find(conn => conn.src.x === dstx && conn.src.y === dsty);
+                        checkEdge(orig.x, orig.y, dstx, dsty);
                     } else {
                         checkEdge(orig.x, orig.y, player.dest.x, player.dest.y);
                     }
