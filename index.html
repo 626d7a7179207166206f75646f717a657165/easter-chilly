@@ -300,6 +300,45 @@
         .interactive {
             cursor: pointer;
         }
+
+        #rule-selectors {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #rule-selectors>div {
+            display: flex;
+            flex-direction: row;
+            gap: 0.5em;
+        }
+
+        #rule-selectors label {
+            text-wrap: nowrap;
+            cursor: pointer;
+        }
+
+        #rule-selectors>div>input[type="radio"] {
+            cursor: pointer;
+            width: 0.5rem;
+        }
+
+        #path {
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            padding: 0.2ex 0.2em;
+            height: 2rem;
+            width: 100%;
+            min-width: 10em;
+            border: 3px solid var(--text-color);
+        }
+
+        dialog[data-constraint="edge-constraint"]>div>div[data-constraint="node-constraint"] {
+            display: none;
+        }
+
+        dialog[data-constraint="node-constraint"]>div>div[data-constraint="edge-constraint"] {
+            display: none;
+        }
     </style>
     <style id="extra-styles"></style>
 </head>
@@ -336,10 +375,20 @@
     </main>
 
     <footer>
-        <div style="flex-grow: 1;">
-            <input type="text" id="path"></input>
+        <div id="rule-selectors" style="flex-grow: 0;">
+            <div>
+                <input type="radio" id="rule-1" name="rules" value="edge-constraint" checked>
+                <label for="rule-1">keine Kante mehrmals</label>
+            </div>
+            <div>
+                <input type="radio" id="rule-2" name="rules" value="node-constraint">
+                <label for="rule-2">kein Knoten mehrmals</label>
+            </div>
         </div>
-        <div style="flex-grow: 0;">
+        <div style="flex-grow: 1;">
+            <textarea id="path" placeholder="zum Testen hier Pfad einfügen"></textarea>
+        </div>
+        <div id="autoplay-container" style="flex-grow: 0;">
             <button id="autoplay">Autoplay</button>
         </div>
     </footer>
@@ -379,10 +428,11 @@
             <div class="level-list"></div>
         </div>
     </dialog>
-    <dialog id="invalid-move">
+    <dialog id="invalid-move" data-constraint="">
         <div>
             <h2>Ungültiger Zug</h2>
-            <div>Hier bist du schon mal entlanggerutscht.</div>
+            <div data-constraint="edge-constraint">Hier bist du schon mal entlanggerutscht.</div>
+            <div data-constraint="node-constraint">Du bist schon mal hierhin gerutscht.</div>
         </div>
     </dialog>
 
@@ -442,12 +492,57 @@
           },
           {
             "thresholds": [
+              31,
+              37,
+              40
+            ],
+            "basePoints": 2,
+            "name": "Kein Halt zweimal",
+            "data": [
+              "OY #    $ Y$Y",
+              " X          Y",
+              "  T # T   $O ",
+              " T       T  T",
+              "#Y   #  TT# #",
+              "Y T $    Y ##",
+              "      Y T $  ",
+              "TT   Y  Y#Y T",
+              " $ #    # $  ",
+              "  $ # Y   T  ",
+              "T    T     P#",
+              "  Y $  Y T  Y"
+            ],
+            "connections": [
+              {
+                "src": {
+                  "x": 0,
+                  "y": 0
+                },
+                "dst": {
+                  "x": 11,
+                  "y": 2
+                }
+              },
+              {
+                "src": {
+                  "x": 11,
+                  "y": 2
+                },
+                "dst": {
+                  "x": 0,
+                  "y": 0
+                }
+              }
+            ]
+          },
+          {
+            "thresholds": [
               73,
               75,
               77
             ],
             "basePoints": 2,
-            "name": "Ganz schön kompliziert",
+            "name": "Keine doppelten Wege",
             "data": [
               "OY T    $ Y$Y",
               " X          Y",

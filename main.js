@@ -26,6 +26,11 @@
 
     const DEBUG = true;
 
+    class Constraint {
+        static Edge = "edge-constraint";
+        static Node = "node-constraint";
+    }
+
     class Tile {
         static Size = 32;
         static Empty = ' ';
@@ -211,7 +216,23 @@
         if (state === State.Autoplay)
             return;
         const key = `${x0},${y0} ➞ ${x1},${y1}`;
+        console.debug(`Checking edge ${key}`);
         if (visited.has(key)) {
+            el.invalidMoveDialog.dataset.constraint = el.constraint.value;
+            el.invalidMoveDialog.showModal();
+            return false;
+        }
+        visited.add(key);
+        return true;
+    }
+
+    function checkNode(x, y) {
+        if (state === State.Autoplay)
+            return;
+        const key = `${x},${y}`;
+        console.debug(`Checking node ${key}`);
+        if (visited.has(key)) {
+            el.invalidMoveDialog.dataset.constraint = el.constraint.value;
             el.invalidMoveDialog.showModal();
             return false;
         }
@@ -342,7 +363,18 @@
             else {
                 player.dest = { x, y };
             }
-            checkEdge(orig.x, orig.y, player.dest.x, player.dest.y);
+            // XXX: falling into holes is not properly recorded as a move
+            switch (el.constraint.value) {
+                case Constraint.Edge:
+                    checkEdge(orig.x, orig.y, player.dest.x, player.dest.y);
+                    break;
+                case Constraint.Node:
+                    checkNode(player.dest.x, player.dest.y);
+                    break;
+                default:
+                    console.warn('No constraint selected');
+                    break;
+            }
             const animationDurationFactor = (state === State.Autoplay ? 66 : 100);
             animationDuration = animationDurationFactor * dist;
             t0 = performance.now();
@@ -843,11 +875,22 @@
         el.invalidMoveDialog.addEventListener('close', () => {
             resetLevel();
         });
+        el.constraint = document.querySelectorAll('[name="rules"]');
+        el.constraint.forEach(radio => {
+            radio.addEventListener('change', () => {
+                const selectedConstraint = document.querySelector('input[name="rules"]:checked');
+                el.constraint.value = selectedConstraint ? selectedConstraint.value : '';
+                console.debug('Constraints:', el.constraint.value);
+            });
+        });
+        const initialSelectedConstraint = document.querySelector('input[name="rules"]:checked');
+        el.constraint.value = initialSelectedConstraint ? initialSelectedConstraint.value : '';
+        console.debug('Constraints:', el.constraint.value);
         el.extraStyles = document.querySelector('#extra-styles');
         el.levelNum = document.querySelector('#level-num');
         el.moveCount = document.querySelector('#move-count');
         el.extras = document.querySelector('#extras');
-        el.path = document.querySelector('input#path');
+        el.path = document.querySelector('#path');
         el.chooseLevel = document.querySelector('#choose-level');
         el.chooseLevel.addEventListener('click', showLevelSelectionScreen);
         el.loudspeaker = document.querySelector('#loudspeaker');
