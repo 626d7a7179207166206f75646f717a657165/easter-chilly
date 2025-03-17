@@ -69,6 +69,8 @@
         static LevelNum = 'easter-chilly.level';
         static MaxLevelNum = 'easter-chilly.max-level';
         static SoundEnabled = 'easter-chilly.sound-enabled';
+        static Constraint = 'easter-chilly.constraint';
+        static Path = 'easter-chilly.path';
     }
 
     let LEVELS;
@@ -921,17 +923,30 @@
             radio.addEventListener('change', () => {
                 const selectedConstraint = document.querySelector('input[name="rules"]:checked');
                 el.constraint.value = selectedConstraint ? selectedConstraint.value : '';
-                console.debug('Constraints:', el.constraint.value);
+                if (radio.checked) {
+                    localStorage.setItem(StorageKey.Constraint, radio.value);
+                }
             });
         });
         const initialSelectedConstraint = document.querySelector('input[name="rules"]:checked');
-        el.constraint.value = initialSelectedConstraint ? initialSelectedConstraint.value : '';
-        console.debug('Constraints:', el.constraint.value);
+        const storedConstraint = localStorage.getItem(StorageKey.Constraint) || 'edge-constraint';
+        if (storedConstraint && Array.from(el.constraint).some(radio => radio.value === storedConstraint)) {
+            Array.from(el.constraint).find(radio => radio.value === storedConstraint).checked = true;
+        }
+        else {
+            initialSelectedConstraint.checked = true;
+        }
+        el.constraint.value = storedConstraint;
+
         el.extraStyles = document.querySelector('#extra-styles');
         el.levelNum = document.querySelector('#level-num');
         el.moveCount = document.querySelector('#move-count');
         el.extras = document.querySelector('#extras');
         el.path = document.querySelector('#path');
+        el.path.value = localStorage.getItem(StorageKey.Path) || '';
+        el.path.addEventListener('input', () => {
+            localStorage.setItem(StorageKey.Path, el.path.value);
+        });
         el.chooseLevel = document.querySelector('#choose-level');
         el.chooseLevel.addEventListener('click', showLevelSelectionScreen);
         el.loudspeaker = document.querySelector('#loudspeaker');
