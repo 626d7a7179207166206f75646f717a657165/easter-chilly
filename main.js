@@ -258,7 +258,6 @@
                 }, 50);
                 return;
             }
-            let key;
             switch (el.constraint.value) {
                 case Constraint.Edge:
                     const { dstx, dsty } = (function(holeEntered) {
@@ -276,30 +275,32 @@
                         }
                         return { dstx, dsty };
                     })(holeEntered);
-                    key = `${x},${y} ➞ ${dstx},${dsty}`;
-                    console.debug(`Checking edge ${key}`);
-                    if (visited.has(key)) {
+                    const edge_key = `${x},${y} ➞ ${dstx},${dsty}`;
+                    console.debug(`Checking edge ${edge_key}`);
+                    if (visited.has(edge_key)) {
                         setState(State.LevelEnd);
                         setTimeout(() => {
-                            alert(`Ungültiger Zug! Kante ${key} zum zweiten Mal besucht bei ${autoplayMoves.substring(0, autoplayIdx - 1)}`);
+                            alert(`Ungültiger Zug! Kante ${edge_key} zum zweiten Mal besucht bei ${autoplayMoves.substring(0, autoplayIdx - 1)}`);
                         }, 50);
                         return;
                     }
+                    visited.add(key);
                     break;
                 case Constraint.Node:
-                    key = `${x},${y}`;
-                    console.debug(`Checking node ${key}`);
-                    if (visited.has(key)) {
+                    const node_key = `${player.dest.x},${player.dest.y}`;
+                    console.debug(`Checking node ${node_key}`);
+                    if (visited.has(node_key)) {
+                        console.debug(`Bad node ${node_key}`);
                         el.invalidMoveDialog.dataset.constraint = el.constraint.value;
                         el.invalidMoveDialog.showModal();
                         return false;
                     }
+                    visited.add(node_key);
                     break;
                 default:
-                    console.warn('No constraint selected');
+                    console.error('No constraint selected');
                     break;
             }
-            visited.add(key);
         }
         else {
             setState(State.Playing);
@@ -399,7 +400,6 @@
             else {
                 player.dest = { x, y };
             }
-            console.debug(JSON.stringify(player, null, 2), holeEntered, x, y, dx, dy);
             switch (el.constraint.value) {
                 case Constraint.Edge:
                     if (holeEntered) {
