@@ -248,6 +248,7 @@
             ++autoplayIdx;
             const { x, y } = player;
             moveTo(direction);
+            // detect fake moves
             if (x === player.dest.x && y === player.dest.y) {
                 setState(State.LevelEnd);
                 setTimeout(() => {
