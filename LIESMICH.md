@@ -1,9 +1,8 @@
-# Rutschpartie
+# Osterrätsel
 
-**Mini-Game, das von Pokémon Crystal Ice Path inspiriert ist**
+Helfen Sie dem Pinguin Chilly bei der Erkundung seines Schlitterparadieses. In diesem Rätsel geht es um das Finden der Routen mit den meisten Zügen, ohne dieselbe Rutschpartie mehrmals zu bestreiten.
 
-Schubse den Pinguin Chilly mit den wenigsten Zügen zum Ziel. Der eisige Boden ist so schlittrig, dass Chilly nur an Hindernissen zum Halt kommt, wenn er erst mal in Fahrt ist. Fällt er in ein Loch hinein, taucht er an einem anderen wieder auf.
-
+Graphentheoretisch ausgedrückt: Chillys Areal ist ein gerichteter, zyklischer Graph. Jede Position, an der er Halt machen kann, ist ein Knoten. Ein Eisloch, in das Chilly fällt, ist kein Halt, sondern stattdessen das Loch, an dem Chilly wieder auftaucht. Soll heißen: Chilly kann eine Strecke mehrfach tauchen, solange er nur von unterschiedlichen Punkten aus ins Eisloch rutscht. Auch der Startpunkt ist kein Halt.
 
 ## Trivia
 
@@ -25,6 +24,4 @@ Diese Software wurde zu Lehr- und Demonstrationszwecken geschaffen und ist nicht
 
 ## Literatur
 
- - Oliver Lau, Rettet den Pinguin!, [c’t 19/2023, S. 56](https://www.heise.de/select/ct/2023/19/2318608564017863443)
- - Oliver Lau, Dreifache Chance, [c’t 21/2023, S. 54](https://www.heise.de/select/ct/2023/21/2319407263017212334)
- - Oliver Lau,  Gut gebettet, Mit Daten-URLs Bilder und andere Daten in Textdokumente integrieren, [c’t 10/2023, S. 152](https://www.heise.de/select/ct/2023/10/2307509274576696945)
+ - Oliver Lau, Osterrätsel, Finden Sie die drei längsten Wege durch Chillys eisige Welt, c’t 9/2025, S. !!!
