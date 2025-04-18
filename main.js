@@ -412,7 +412,9 @@
                     }
                     break;
                 case Constraint.Node:
-                    checkNode(player.dest.x, player.dest.y);
+                    const dstx = (player.dest.x + level.width) % level.width;
+                    const dsty = (player.dest.y + level.height) % level.height;
+                    checkNode(dstx, dsty);
                     break;
                 default:
                     console.warn('No constraint selected');
