@@ -284,7 +284,7 @@
                         }, 50);
                         return;
                     }
-                    visited.add(key);
+                    visited.add(edge_key);
                     break;
                 case Constraint.Node:
                     const node_key = `${player.dest.x},${player.dest.y}`;
