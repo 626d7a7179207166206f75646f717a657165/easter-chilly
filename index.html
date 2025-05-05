@@ -103,6 +103,15 @@
             }
         }
 
+        a {
+            color: var(--text-color);
+            text-decoration: underline;
+        }
+
+        a:hover {
+            background-color: #c04bf2;
+        }
+
         main {
             display: flex;
             flex-direction: column;
@@ -416,7 +425,7 @@
             <div>
                 In dieser Osterspezialausgabe sollst du den längsten Weg zum Ausgang finden.
                 Dabei sollst du aber nicht wild umherirren, sondern gekonnt doppelte Wege oder Halte vermeiden.
-                Details zu den Regeln findest du auf der heise-online-Webseite beziehungsweise in dem c’t-Artikel, wo du
+                Details zu den Regeln findest du auf der <a target="_blank" href="https://www.heise.de/hintergrund/Osterraetsel-2025-Schick-den-Pinguin-Chilly-auf-Eiersuche-10319373.html">heise-online-Webseite</a> beziehungsweise in dem <a target="_blank" href="https://www.heise.de/select/ct/2025/9/2507710375395222187">c’t-Artikel</a>, wo du
                 den Link auf dieses Spiel gefunden hast.
             </div>
             <div class="pulsating" data-command="proceed">
@@ -475,6 +484,7 @@
               "Y  T$ OT",
               "YTY#TT##"
             ],
+            "constraint": "edge-constraint",
             "connections": [
               {
                 "src": {
@@ -515,6 +525,7 @@
               40
             ],
             "name": "Kein Halt zweimal",
+            "constraint": "node-constraint",
             "data": [
               "OY #    $ Y$Y",
               " X          Y",
@@ -559,6 +570,7 @@
               77
             ],
             "name": "Keine doppelten Wege",
+            "constraint": "edge-constraint",
             "data": [
               "OY T    $ Y$Y",
               " X          Y",

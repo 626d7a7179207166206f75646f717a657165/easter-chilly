@@ -839,6 +839,25 @@
             div.textContent = `Level ${parseInt(i) + 1}: ${lvlName}`;
             div.dataset.levelIdx = i;
             div.addEventListener('click', e => {
+                switch (level.constraint) {
+                    case Constraint.Edge:
+                        el.constraint.forEach(radio => {
+                            if (radio.value === Constraint.Edge) {
+                                radio.checked = true;
+                            }
+                        });
+                        break;
+                    case Constraint.Node:
+                        el.constraint.forEach(radio => {
+                            if (radio.value === Constraint.Node) {
+                                radio.checked = true;
+                            }
+                        });
+                        break;
+                    default:
+                        console.error('No constraint selected');
+                        break;
+                }
                 el.levelSelectionDialog.close();
                 gotoLevel(parseInt(e.target.dataset.levelIdx));
             });
@@ -948,6 +967,7 @@
         el.path.value = localStorage.getItem(StorageKey.Path) || '';
         el.path.addEventListener('input', () => {
             localStorage.setItem(StorageKey.Path, el.path.value);
+            el.moveCount.textContent = el.path.value.length;
         });
         el.chooseLevel = document.querySelector('#choose-level');
         el.chooseLevel.addEventListener('click', showLevelSelectionScreen);
