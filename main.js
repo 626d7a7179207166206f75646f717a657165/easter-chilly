@@ -841,6 +841,7 @@
                                 radio.checked = true;
                             }
                         });
+                        el.constraint.value = Constraint.Edge;
                         break;
                     case Constraint.Node:
                         el.constraint.forEach(radio => {
@@ -848,6 +849,7 @@
                                 radio.checked = true;
                             }
                         });
+                        el.constraint.value = Constraint.Node;
                         break;
                     default:
                         console.error('No constraint selected');
