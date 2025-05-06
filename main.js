@@ -263,8 +263,8 @@
                     const { dstx, dsty } = (function(holeEntered) {
                         let dstx, dsty;
                         if (holeEntered) {
-                            let dstx = (player.dest.x + level.width) % level.width;
-                            let dsty = (player.dest.y + level.height) % level.height;
+                            dstx = (player.dest.x + level.width) % level.width;
+                            dsty = (player.dest.y + level.height) % level.height;
                             const connection = level.connections.find(conn => conn.src.x === dstx && conn.src.y === dsty);
                             dstx = connection.dst.x;
                             dsty = connection.dst.y;
@@ -395,26 +395,21 @@
         if (dist > 0) {
             isMoving = true;
             if (exitReached || holeEntered) {
-                player.dest = { x: x + dx, y: y + dy };
+                x += dx;
+                y += dy;
             }
-            else {
-                player.dest = { x, y };
-            }
+            player.dest = { x: (x + level.width) % level.width, y: (y + level.height) % level.height };
             switch (el.constraint.value) {
                 case Constraint.Edge:
                     if (holeEntered) {
-                        const dstx = (player.dest.x + level.width) % level.width;
-                        const dsty = (player.dest.y + level.height) % level.height;
-                        const connection = level.connections.find(conn => conn.src.x === dstx && conn.src.y === dsty);
-                        checkEdge(orig.x, orig.y, dstx, dsty);
+                        const connection = level.connections.find(conn => conn.src.x === player.dest.x && conn.src.y === player.dest.y);
+                        checkEdge(orig.x, orig.y, connection.dst.x, connection.dst.y);
                     } else {
                         checkEdge(orig.x, orig.y, player.dest.x, player.dest.y);
                     }
                     break;
                 case Constraint.Node:
-                    const dstx = (player.dest.x + level.width) % level.width;
-                    const dsty = (player.dest.y + level.height) % level.height;
-                    checkNode(dstx, dsty);
+                    checkNode(player.dest.x, player.dest.y);
                     break;
                 default:
                     console.warn('No constraint selected');
