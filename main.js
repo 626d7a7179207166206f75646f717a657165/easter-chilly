@@ -176,7 +176,7 @@
         player.el.style.transform = `rotate(${angle + Math.PI / 2}rad)`;
         standUpright();
         const dist = Math.sqrt(squared(player.x - player.dest.x) + squared(player.y - player.dest.y));
-        const animationDurationFactor = (state === State.Autoplay ? 67 : 133);
+        const animationDurationFactor = (state === State.Autoplay ? 55 : 133);
         animationDuration = animationDurationFactor * dist;
         t0 = performance.now();
         t1 = t0 + animationDuration;
@@ -242,6 +242,22 @@
         return true;
     }
 
+    function getDestNode() {
+        let dstx, dsty;
+        if (holeEntered) {
+            let dstx = (player.dest.x + level.width) % level.width;
+            let dsty = (player.dest.y + level.height) % level.height;
+            const connection = level.connections.find(conn => conn.src.x === dstx && conn.src.y === dsty);
+            dstx = connection.dst.x;
+            dsty = connection.dst.y;
+        }
+        else {
+            dstx = player.dest.x;
+            dsty = player.dest.y;
+        }
+        return { dstx, dsty };
+    }
+
     function checkAutoplay() {
         if (state !== State.Autoplay)
             return;
@@ -260,42 +276,33 @@
             }
             switch (el.constraint.value) {
                 case Constraint.Edge:
-                    const { dstx, dsty } = (function(holeEntered) {
-                        let dstx, dsty;
-                        if (holeEntered) {
-                            let dstx = (player.dest.x + level.width) % level.width;
-                            let dsty = (player.dest.y + level.height) % level.height;
-                            const connection = level.connections.find(conn => conn.src.x === dstx && conn.src.y === dsty);
-                            dstx = connection.dst.x;
-                            dsty = connection.dst.y;
+                    {
+                        const { dstx, dsty } = getDestNode();
+                        const edge_key = `${x},${y} ➞ ${dstx},${dsty}`;
+                        console.debug(`Checking edge ${edge_key}`);
+                        if (visited.has(edge_key)) {
+                            setState(State.LevelEnd);
+                            setTimeout(() => {
+                                alert(`Ungültiger Zug! Kante ${edge_key} zum zweiten Mal besucht bei ${autoplayMoves.substring(0, autoplayIdx - 1)}`);
+                            }, 50);
+                            return;
                         }
-                        else {
-                            dstx = player.dest.x;
-                            dsty = player.dest.y;
-                        }
-                        return { dstx, dsty };
-                    })(holeEntered);
-                    const edge_key = `${x},${y} ➞ ${dstx},${dsty}`;
-                    console.debug(`Checking edge ${edge_key}`);
-                    if (visited.has(edge_key)) {
-                        setState(State.LevelEnd);
-                        setTimeout(() => {
-                            alert(`Ungültiger Zug! Kante ${edge_key} zum zweiten Mal besucht bei ${autoplayMoves.substring(0, autoplayIdx - 1)}`);
-                        }, 50);
-                        return;
+                        visited.add(edge_key);
                     }
-                    visited.add(edge_key);
                     break;
                 case Constraint.Node:
-                    const node_key = `${player.dest.x},${player.dest.y}`;
-                    console.debug(`Checking node ${node_key}`);
-                    if (visited.has(node_key)) {
-                        console.debug(`Bad node ${node_key}`);
-                        el.invalidMoveDialog.dataset.constraint = el.constraint.value;
-                        el.invalidMoveDialog.showModal();
-                        return false;
+                    {
+                        const { dstx, dsty } = getDestNode();
+                        const node_key = `${dstx},${dsty}`;
+                        console.debug(`Checking node ${node_key}`);
+                        if (visited.has(node_key)) {
+                            console.debug(`Bad node ${node_key}`);
+                            el.invalidMoveDialog.dataset.constraint = el.constraint.value;
+                            el.invalidMoveDialog.showModal();
+                            return false;
+                        }
+                        visited.add(node_key);
                     }
-                    visited.add(node_key);
                     break;
                 default:
                     console.error('No constraint selected');
